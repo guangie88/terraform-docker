@@ -1,8 +1,9 @@
 version: '1.0'
 stages:
 - clone
-- build
-- test
+- prep
+- native
+- image
 - push
 
 steps:
@@ -22,10 +23,18 @@ steps:
     repo: hashicorp/terraform
     revision: master
 
+  build_builder:
+    title: Build the Alpine golang builder
+    stage: prep
+    type: build
+    image_name: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}-builder
+    dockerfile: Dockerfile-builder
+    working_directory: ${{clone_self}}
+
   build_binary:
     title: Build Terraform binary
-    stage: build
-    image: golang:1.12
+    stage: native
+    image: ${{build_builder}}
     environment:
     - GOPATH=/codefresh/volume/.go
     working_directory: ${{clone_terraform}}
@@ -35,7 +44,7 @@ steps:
 
   compress_binary:
     title: Compress Terraform binary
-    stage: build
+    stage: native
     image: guangie88/releaser:alpine_upx-3_ghr-0.12
     working_directory: ${{clone_terraform}}
     commands:
@@ -43,7 +52,7 @@ steps:
     
   copy_binary:
     title: Copy Terraform binary for Docker image build
-    stage: build
+    stage: native
     image: guangie88/releaser:alpine_upx-3_ghr-0.12
     working_directory: ${{clone_self}}
     commands:
@@ -53,14 +62,14 @@ steps:
   build_image:
     title: Build Docker image
     type: build
-    stage: build
-    image_name: guangie88/terraform
+    stage: image
+    image_name: ${{CF_REPO_OWNER}}/terraform
     dockerfile: Dockerfile
     working_directory: ${{clone_self}}
 
   test_image:
     title: Test working Docker image
-    stage: test
+    stage: image
     image: ${{build_image}}
     working_directory: ${{clone_self}}
     cmd:
