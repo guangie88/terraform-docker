@@ -21,7 +21,6 @@ steps:
     git: github
     repo: hashicorp/terraform
     revision: master
-    working_directory: ${{clone_self}}/terraform
 
   build_binary:
     title: Build Terraform binary
@@ -42,7 +41,7 @@ steps:
   copy_binary:
     title: Copy Terraform binary for Docker image build
     stage: build
-    image_name: guangie88/releaser:alpine_upx-3_ghr-0.12
+    image: guangie88/releaser:alpine_upx-3_ghr-0.12
     working_directory: ${{clone_self}}
     commands:
     - cp /codefresh/volume/terraform ./
