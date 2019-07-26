@@ -17,7 +17,7 @@ steps:
     title: Build Docker image
     type: build
     stage: build
-    image: terraform
+    image_name: terraform
     dockerfile: Dockerfile
 
   push_image:
