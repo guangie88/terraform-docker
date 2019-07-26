@@ -26,6 +26,8 @@ steps:
     title: Build Terraform binary
     stage: build
     image: golang:1.12
+    environment:
+    - GOPATH=/codefresh/volume/.go
     working_directory: ${{clone_terraform}}
     commands:
     - mkdir -p /codefresh/volume/terraform/bin
