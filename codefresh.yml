@@ -12,7 +12,6 @@ steps:
     git: github
     repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
     revision: ${{CF_REVISION}}
-    working_directory: ${{main_clone}}
 
   clone_terraform:
     title: Clone official Hashicorp terraform repository
@@ -21,7 +20,7 @@ steps:
     git: github
     repo: hashicorp/terraform
     revision: master
-    working_directory: ${{main_clone}}/terraform
+    working_directory: ${{clone_self}}/terraform
 
   build_binary:
     title: Build Terraform binary
