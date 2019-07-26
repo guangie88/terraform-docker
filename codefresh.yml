@@ -1,0 +1,29 @@
+version: '1.0'
+stages:
+- clone
+- build
+- push
+
+steps:
+  clone_terraform:
+    title: Clone official Hashicorp terraform repository
+    type: git-clone
+    stage: clone
+    git: github
+    repo: hashicorp/terraform
+    revision: master
+
+  build_image:
+    title: Build Docker image
+    type: build
+    stage: build
+    image: terraform
+    dockerfile: Dockerfile
+
+  push_image:
+    title: Push Docker image into Dockerhub
+    type: push
+    stage: push
+    candidate: '${{build_image}}'
+    tag: latest
+    registry: dockerhub
