@@ -17,13 +17,14 @@ steps:
     title: Build Docker image
     type: build
     stage: build
-    image_name: terraform
+    image_name: guangie88/terraform
     dockerfile: Dockerfile
+    working_directory: ${{clone_terraform}}
 
   push_image:
     title: Push Docker image into Dockerhub
     type: push
     stage: push
-    candidate: '${{build_image}}'
+    candidate: ${{build_image}}
     tag: latest
     registry: dockerhub
