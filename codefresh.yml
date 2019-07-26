@@ -2,6 +2,7 @@ version: '1.0'
 stages:
 - clone
 - build
+- test
 - push
 
 steps:
@@ -45,6 +46,14 @@ steps:
     image_name: guangie88/terraform
     dockerfile: Dockerfile
     working_directory: ${{clone_self}}
+
+  test_image:
+    title: Test working Docker image
+    stage: test
+    image: ${{build_image}}
+    working_directory: ${{clone_self}}
+    commands:
+    - --version
 
   push_image:
     title: Push Docker image into Dockerhub
