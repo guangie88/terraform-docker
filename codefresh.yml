@@ -5,6 +5,15 @@ stages:
 - push
 
 steps:
+  clone_self:
+    title: Clone this repository
+    type: git-clone
+    stage: clone
+    git: github
+    repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+    revision: ${{CF_REVISION}}
+    working_directory: ${{main_clone}}
+
   clone_terraform:
     title: Clone official Hashicorp terraform repository
     type: git-clone
@@ -12,6 +21,23 @@ steps:
     git: github
     repo: hashicorp/terraform
     revision: master
+    working_directory: ${{main_clone}}/terraform
+
+  build_binary:
+    title: Build Terraform binary
+    stage: build
+    image: golang:1.12-alpine
+    working_directory: ${{clone_terraform}}
+    commands:
+    - go build -v -o bin/terraform
+
+  compress_binary:
+    title: Compress Terraform binary
+    stage: build
+    image: guangie88/releaser:alpine_upx-3_ghr-0.12
+    working_directory: ${{clone_terraform}}
+    commands:
+    - upx --best --lzma bin/terraform
 
   build_image:
     title: Build Docker image
@@ -19,7 +45,7 @@ steps:
     stage: build
     image_name: guangie88/terraform
     dockerfile: Dockerfile
-    working_directory: ${{clone_terraform}}
+    working_directory: ${{clone_self}}
 
   push_image:
     title: Push Docker image into Dockerhub
@@ -28,3 +54,7 @@ steps:
     candidate: ${{build_image}}
     tag: latest
     registry: dockerhub
+    when:
+      branch:
+        only:
+        - master
