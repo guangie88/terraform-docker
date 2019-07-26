@@ -1,0 +1,88 @@
+version: '1.0'
+stages:
+- clone
+- prep
+- native
+- image
+- push
+
+steps:
+  clone_self:
+    title: Clone this repository
+    type: git-clone
+    stage: clone
+    git: github
+    repo: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}
+    revision: ${{CF_REVISION}}
+
+  clone_terraform:
+    title: Clone official Hashicorp terraform repository
+    type: git-clone
+    stage: clone
+    git: github
+    repo: hashicorp/terraform
+    revision: master
+
+  build_builder:
+    title: Build the Alpine golang builder
+    stage: prep
+    type: build
+    image_name: ${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}-builder
+    dockerfile: Dockerfile-builder
+    working_directory: ${{clone_self}}
+
+  build_binary:
+    title: Build Terraform binary
+    stage: native
+    image: ${{build_builder}}
+    environment:
+    - GOPATH=/codefresh/volume/.go
+    working_directory: ${{clone_terraform}}
+    commands:
+    - mkdir -p /codefresh/volume/terraform/bin
+    - go build -v -o /codefresh/volume/terraform/bin/terraform
+
+  compress_binary:
+    title: Compress Terraform binary
+    stage: native
+    image: guangie88/releaser:alpine_upx-3_ghr-0.12
+    working_directory: ${{clone_terraform}}
+    commands:
+    - upx --best --lzma /codefresh/volume/terraform/bin/terraform
+    
+  copy_binary:
+    title: Copy Terraform binary for Docker image build
+    stage: native
+    image: guangie88/releaser:alpine_upx-3_ghr-0.12
+    working_directory: ${{clone_self}}
+    commands:
+    - mkdir -p bin
+    - cp /codefresh/volume/terraform/bin/terraform ./bin/
+
+  build_image:
+    title: Build Docker image
+    type: build
+    stage: image
+    image_name: ${{CF_REPO_OWNER}}/terraform
+    dockerfile: Dockerfile
+    working_directory: ${{clone_self}}
+
+  test_image:
+    title: Test working Docker image
+    stage: image
+    image: ${{build_image}}
+    working_directory: ${{clone_self}}
+    cmd:
+    - --version
+
+  push_image:
+    title: Push Docker image into Dockerhub
+    type: push
+    stage: push
+    candidate: ${{build_image}}
+    tag: latest
+    registry: dockerhub
+    when:
+      branch:
+        only:
+        - master

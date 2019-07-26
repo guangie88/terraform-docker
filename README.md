@@ -1,2 +1,3 @@
 # terraform-docker
-Builds daily to get the latest and smallest terraform binary
+
+Builds daily to get the latest terraform binary.
