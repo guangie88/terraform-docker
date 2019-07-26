@@ -25,7 +25,7 @@ steps:
   build_binary:
     title: Build Terraform binary
     stage: build
-    image: golang:1.12-alpine
+    image: golang:1.12
     working_directory: ${{clone_terraform}}
     commands:
     - go build -v -o bin/terraform
