@@ -28,7 +28,8 @@ steps:
     image: golang:1.12
     working_directory: ${{clone_terraform}}
     commands:
-    - go build -v -o /codefresh/volume/terraform
+    - mkdir -p /codefresh/volume/terraform/bin
+    - go build -v -o /codefresh/volume/terraform/bin/terraform
 
   compress_binary:
     title: Compress Terraform binary
@@ -36,7 +37,7 @@ steps:
     image: guangie88/releaser:alpine_upx-3_ghr-0.12
     working_directory: ${{clone_terraform}}
     commands:
-    - upx --best --lzma /codefresh/volume/terraform
+    - upx --best --lzma /codefresh/volume/terraform/bin/terraform
     
   copy_binary:
     title: Copy Terraform binary for Docker image build
@@ -44,7 +45,7 @@ steps:
     image: guangie88/releaser:alpine_upx-3_ghr-0.12
     working_directory: ${{clone_self}}
     commands:
-    - cp /codefresh/volume/terraform ./
+    - cp /codefresh/volume/terraform/bin/terraform ./
 
   build_image:
     title: Build Docker image
