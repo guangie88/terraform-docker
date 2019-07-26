@@ -47,7 +47,8 @@ steps:
     image: guangie88/releaser:alpine_upx-3_ghr-0.12
     working_directory: ${{clone_self}}
     commands:
-    - cp /codefresh/volume/terraform/bin/terraform ./
+    - mkdir -p bin
+    - cp /codefresh/volume/terraform/bin/terraform ./bin/
 
   build_image:
     title: Build Docker image
